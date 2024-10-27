@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <title>{% block title %}{% translate "My shop" %}{% endblock %}</title>
-    <link href="{% static "css/base.css" %}" rel="stylesheet">
+    <link href="{% static "css/base-shop.css" %}" rel="stylesheet">
   </head>
   <body>
     <div id="header">
@@ -25,6 +25,34 @@
           {% endfor %}
         </ul>
       </div>
+      {% if request.user.is_authenticated %}
+      <ul class="menu">
+        <li {% if section == "dashboard" %}class="selected"{% endif %}>
+          <a href="{% url "dashboard" %}">My dashboard</a>
+        </li>
+        <li {% if section == "images" %}class="selected"{% endif %}>
+          <a href="{% url "images:list" %}">Images</a>
+        </li>
+        <li {% if section == "people" %}class="selected"{% endif %}>
+          <a href="{% url "user_list" %}">People</a>
+        </li>
+        <li {% if section == "blog" %}class="selected"{% endif %}>
+          <a href="{% url "blog:post_list" %}">Blog</a>
+        </li>
+        <li {% if section == "recipes" %}class="selected"{% endif %}>
+          <a href="{% url "recipes:recipe_list" %}">Recipes</a>
+        </li>
+        <li {% if section == "search" %}class="selected"{% endif %}>
+          <a href="{% url "blog:post_search" %}">Search</a>
+        </li>
+        <li {% if section == "shop" %}class="selected"{% endif %}>
+          <a href="{% url "shop:product_list" %}">Shop</a>
+        </li>
+        <li {% if section == "admin" %}class="selected"{% endif %}>
+          <a href="{% url "admin:index" %}">Admin</a>
+        </li>
+      </ul>
+      {% endif %}
     </div>
     <div id="subheader">
       <div class="cart">

@@ -30,6 +30,12 @@ urlpatterns = i18n_patterns(
     path(_("payment/"), include("payment.urls", namespace="payment")),
     path(_("coupons/"), include("coupons.urls", namespace="coupons")),
     path("rosetta/", include("rosetta.urls")),
+    path(_("account/"), include("account.urls")),
+    path("social-auth/", include("social_django.urls", namespace="social")),
+    path(_("images/"), include("images.urls", namespace="images")),
+    path("__debug__/", include("debug_toolbar.urls")),
+    path(_("blog/"), include("blog.urls", namespace="blog")),
+    path(_("recipes/"), include("recipes.urls", namespace="recipes")),
     path("", include("shop.urls", namespace="shop")),
 )
 urlpatterns += [
