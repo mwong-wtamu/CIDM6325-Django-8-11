@@ -9,3 +9,6 @@ python-decouple==3.8
 WeasyPrint==62.3
 gevent==24.10.3
 redis==5.0.4
+django-rosetta==0.10.0
+django-parler==2.3
+django-localflavor==4.0

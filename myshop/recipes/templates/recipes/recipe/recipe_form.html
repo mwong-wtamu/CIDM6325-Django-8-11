@@ -1,0 +1,17 @@
+{% extends "recipes/base.html" %}
+
+{% block title %}Create or Edit Recipe{% endblock %}
+
+{% block content %}
+    <h1>{% if form.instance.pk %}Edit Recipe{% else %}Create New Recipe{% endif %}</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Update Recipe{% else %}Create Recipe{% endif %}</button>
+    </form>
+
+    <p>
+        <a href="{% url 'recipes:recipe_list' %}">Back to Recipe List</a>
+    </p>
+{% endblock %}

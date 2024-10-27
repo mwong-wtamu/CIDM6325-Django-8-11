@@ -1,0 +1,165 @@
+{% extends "recipes/base.html" %}
+
+{% block title %}{{ recipe.title }}{% endblock %}
+{% block content %}
+    <h1>{{ recipe.title }}</h1>
+    <p class="date">
+        Published {{ recipe.publish }} by {{ recipe.author }}
+    </p>
+ 
+   <!-- Images associated with the recipe -->
+   <div class="recipe-image">
+     {% for image in recipe.images.all %}
+         <div class="image">
+            <a href="{{ image.get_absolute_url }}">
+                <img src="{{ image.image.url }}" alt="{{ image.description }}"  class="image-detail">
+            </a>
+             <p>{{ image.description }}</p>
+             <!--
+             {% load thumbnail %}
+             <a href="{{ image.image.url }}">
+               <img src="{% thumbnail image.image 300x0 %}" class="image-detail">
+             </a>
+             -->
+         </div>
+     {% empty %}
+         <p>No images available for this recipe.</p>
+     {% endfor %}
+    </div>
+
+    <!-- Like button and count for the recipe -->
+    {% with total_likes=recipe.users_like.count users_like=recipe.users_like.all %}
+      <div class="recipe-info">
+        <div>
+            <span class="count">
+                <span class="total">{{ total_likes }}</span>
+                like{{ total_likes|pluralize }}
+                </span>
+                <span class="count">
+                {{ total_views }} view{{ total_views|pluralize }}
+            </span>
+          <a href="#" data-id="{{ recipe.id }}" data-action="{% if request.user in users_like %}un{% endif %}like"
+             class="like button">
+            {% if request.user not in users_like %}
+              Like
+            {% else %}
+              Unlike
+            {% endif %}
+          </a>
+        </div>
+      </div>
+      <div class="image-likes">
+        {% for user in recipe.users_like.all %}
+          <div>
+            {% if user.profile.photo %}
+              <img src="{{ user.profile.photo.url }}">
+            {% endif %}
+            <p>{{ user.first_name }}</p>
+          </div>
+        {% empty %}
+          Nobody likes this image yet.
+        {% endfor %}
+      </div>
+    {% endwith %}
+
+    <div class="recipe-detail">
+        <h2>Ingredients: </h2>
+        <p>
+            <ul>
+            {% for ingredient in recipe.ingredients.splitlines %}
+                <li>{{ ingredient }}</li>
+            {% endfor %}
+            </ul>
+        </p>
+        <p>
+            Preparation Time: {{ recipe.prep_time }} minutes
+        </p>
+        <p>
+            Cooking Time: {{ recipe.cook_time }} minutes
+        </p>
+        <p>
+            Average Rating: {{ recipe.average_rating|default_if_none:"Not Rated" }} / 5
+        </p>
+        <div>
+        {% include "recipes/recipe/includes/rate_recipe_form.html" %}
+        </div>
+        <div style="clear:both"></div>
+        <h2>Instructions:</h2>
+        {{ recipe.body|linebreaks }}
+
+
+        <p>
+            <a href="{% url "recipes:recipe_share" recipe.id %}">
+            Share this recipe
+            </a>
+        </p>
+
+        <h2>Similar recipes</h2>
+        {% for similar_recipe in similar_recipes %}
+        <p>
+            <a href="{{ similar_recipe.get_absolute_url }}">{{ similar_recipe.title }}</a>
+        </p>
+        {% empty %}
+        There are no similar recipes yet.
+        {% endfor %}
+
+        {% with comments.count as total_comments %}
+            <h2>
+            {{ total_comments }} comment{{ total_comments|pluralize }}
+            </h2>
+        {% endwith %}
+        {% for comment in comments %}
+            <div class="comment">
+                <p class="info">
+                Recipe comment {{ forloop.counter }} by {{ comment.name }}
+                {{ comment.created }}
+                </p>
+                {{ comment.body|linebreaks }}
+            </div>
+        {% empty %}
+        <p>There are no comments.</p>
+        {% endfor %}
+        {% include "recipes/recipe/includes/comment_form.html" %}
+    </div>
+{% endblock %}
+
+{% block domready %}
+  const url = '{% url "recipes:recipe_like" %}';
+  var options = {
+    method: 'POST',
+    headers: {'X-CSRFToken': csrftoken},
+    mode: 'same-origin'
+  }
+
+  document.querySelector('a.like')
+          .addEventListener('click', function(e){
+    e.preventDefault();
+    var likeButton = this;
+
+    // add request body
+    var formData = new FormData();
+    formData.append('id', likeButton.dataset.id);
+    formData.append('action', likeButton.dataset.action);
+    options['body'] = formData;
+
+    // send HTTP request
+    fetch(url, options)
+    .then(response => response.json())
+    .then(data => {
+      if (data['status'] === 'ok')
+      {
+        var previousAction = likeButton.dataset.action;
+
+        // toggle button text and data-action
+        var action = previousAction === 'like' ? 'unlike' : 'like';
+        likeButton.dataset.action = action;
+        likeButton.innerHTML = action;
+
+        // update like count
+        var likeCount = document.querySelector('span.count .total');
+        var totalLikes = parseInt(likeCount.innerHTML);
+        likeCount.innerHTML = previousAction === 'like' ? totalLikes + 1 : totalLikes - 1;
+      }
+    })
+  });
+{% endblock %}

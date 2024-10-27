@@ -1,0 +1,15 @@
+<h2>Rate {{ recipe.title }}</h2>
+<p>Average Rating: {{ recipe.average_rating|default_if_none:"Not Rated" }} / 5</p>
+
+<form action="{% url 'recipes:rate_recipe' recipe.id %}" method="post">
+    {% csrf_token %}
+    <div class="left">
+    {{ rating_form.as_p }}
+    {% if rating_form.errors %}
+        <div class="form-errors">
+            {{ rating_form.errors }}
+        </div>
+    {% endif %}
+    </div>
+    <p><input type="submit" value="Add rating"></p>
+</form>
