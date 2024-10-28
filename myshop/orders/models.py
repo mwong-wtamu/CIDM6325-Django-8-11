@@ -3,15 +3,24 @@ from django.conf import settings
 from decimal import Decimal
 from django.core.validators import MaxValueValidator, MinValueValidator
 from coupons.models import Coupon
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import User
 
 
 class Order(models.Model):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    email = models.EmailField()
-    address = models.CharField(max_length=250)
-    postal_code = models.CharField(max_length=20)
-    city = models.CharField(max_length=100)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="orders",
+        null=True,  # Allow null values for non-authenticated users
+        blank=True,
+    )
+    first_name = models.CharField(_("first name"), max_length=50)
+    last_name = models.CharField(_("last name"), max_length=50)
+    email = models.EmailField(_("e-mail"))
+    address = models.CharField(_("address"), max_length=250)
+    postal_code = models.CharField(_("postal code"), max_length=20)
+    city = models.CharField(_("city"), max_length=100)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     paid = models.BooleanField(default=False)
@@ -59,6 +68,14 @@ class Order(models.Model):
             return total_cost * (self.discount / Decimal(100))
         return Decimal(0)
 
+    def paid_status(self):
+        return (
+            self.user.paid_user.is_paid
+            if self.user and hasattr(self.user, "paid_user")
+            else False
+        )
+        paid_status.short_description = "Paid Status"  # Label for the admin display
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
@@ -73,3 +90,14 @@ class OrderItem(models.Model):
 
     def get_cost(self):
         return self.price * self.quantity
+
+
+class PaidUser(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="paid_user"
+    )
+    is_paid = models.BooleanField(default=False)
+    payment_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - Paid: {self.is_paid}"

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderItem
+from .models import Order, OrderItem, PaidUser
 from django.utils.safestring import mark_safe
 import csv
 import datetime
@@ -85,3 +85,12 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
 
     actions = [export_to_csv]
+
+
+@admin.register(PaidUser)
+class PaidUserAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "is_paid",
+        "payment_date",
+    )  # Customize fields shown in the admin list

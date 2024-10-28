@@ -1,0 +1,24 @@
+{% load thumbnail %}
+{% for image in images %}
+  <div class="image">
+    <a href="{{ image.get_absolute_url }}">
+      {% thumbnail image.image 300x300 crop="smart" as im %}
+      <a href="{{ image.get_absolute_url }}">
+        <img src="{{ im.url }}">
+      </a>
+    </a>
+    <div class="info">
+      <a href="{{ image.get_absolute_url }}" class="title">
+        {{ image.title }}
+      </a>
+      <!-- Display the recipes associated with this image -->
+      <ul>
+        {% for recipe in image.recipes.all %}
+          <li><a href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a></li>
+        {% empty %}
+          <!-- <li>No recipes linked</li> -->
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endfor %}

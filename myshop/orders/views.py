@@ -15,7 +15,13 @@ def order_create(request):
     if request.method == "POST":
         form = OrderCreateForm(request.POST)
         if form.is_valid():
+            # If the user is authenticated, link them to the order; otherwise, leave user` blank
+            user = request.user if request.user.is_authenticated else None
+
+            # Save order without committing to set additional fields
             order = form.save(commit=False)
+            order.user = user  # Set the user field based on authentication status
+
             if cart.coupon:
                 order.coupon = cart.coupon
                 order.discount = cart.coupon.discount

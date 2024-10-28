@@ -2,6 +2,8 @@ from django.shortcuts import get_object_or_404, render
 from .models import Category, Product
 from cart.forms import CartAddProductForm
 from .recommender import Recommender
+from django.shortcuts import redirect
+from django.urls import reverse
 
 
 def product_list(request, category_slug=None):
@@ -32,3 +34,12 @@ def product_detail(request, id, slug):
             "recommended_products": recommended_products,
         },
     )
+
+
+def payment_required(request):
+    product_id = 5
+    slug = "premium-recipes"
+
+    product_url = reverse("shop:product_detail", args=[product_id, slug])
+    print("Redirecting to:", product_url)
+    return redirect(product_url)
