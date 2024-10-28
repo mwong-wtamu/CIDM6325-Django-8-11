@@ -13,66 +13,6 @@ class PublishedManager(models.Manager):
         return super().get_queryset().filter(status=Recipe.Status.PUBLISHED)
 
 
-# class Post(models.Model):
-#     class Status(models.TextChoices):
-#         DRAFT = "DF", "Draft"
-#         PUBLISHED = "PB", "Published"
-
-#     title = models.CharField(max_length=250)
-#     slug = models.SlugField(max_length=250, unique_for_date="publish")
-#     author = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.CASCADE,
-#         related_name="blog_posts",  # user.blog_posts
-#     )
-#     body = models.TextField()
-#     publish = models.DateTimeField(default=timezone.now)
-#     # publish = models.DateTimeField(db_default=Now()) # //Database DateTime Now
-#     created = models.DateTimeField(auto_now_add=True)
-#     updated = models.DateTimeField(auto_now=True)
-#     status = models.CharField(max_length=2, choices=Status, default=Status.DRAFT)
-#     objects = models.Manager()  # The default manager.
-#     published = PublishedManager()  # Our custom manager.
-
-#     class Meta:
-#         ordering = ["-publish"]
-#         indexes = [
-#             models.Index(fields=["-publish"]),
-#         ]
-
-#     def __str__(self):
-#         return self.title
-
-#     def get_absolute_url(self):
-#         return reverse(
-#             "blog:post_detail",
-#             args=[self.publish.year, self.publish.month, self.publish.day, self.slug],
-#         )
-
-#     # The reverse() function will build the URL dynamically using the URL name defined in the URL patterns.
-
-#     tags = TaggableManager()
-
-
-# class Comment(models.Model):
-#     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
-#     name = models.CharField(max_length=80)
-#     email = models.EmailField()
-#     body = models.TextField()
-#     created = models.DateTimeField(auto_now_add=True)
-#     updated = models.DateTimeField(auto_now=True)
-#     active = models.BooleanField(default=True)
-
-#     class Meta:
-#         ordering = ["created"]
-#         indexes = [
-#             models.Index(fields=["created"]),
-#         ]
-
-#     def __str__(self):
-#         return f"Comment by {self.name} on {self.post}"
-
-
 class Recipe(models.Model):
     class Status(models.TextChoices):
         DRAFT = "DF", "Draft"
@@ -98,6 +38,8 @@ class Recipe(models.Model):
     prep_time = models.IntegerField(help_text="Preparation time in minutes")
     cook_time = models.IntegerField(help_text="Cooking time in minutes")
     # average_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
+
+    is_premium = models.BooleanField(default=False)  # New field for premium status
 
     # Many-to-Many relationship for likes (users who liked the recipe)
     users_like = models.ManyToManyField(

@@ -1,8 +1,9 @@
 import stripe
 from django.conf import settings
 from django.http import HttpResponse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from orders.models import Order
+from orders.models import Order, PaidUser
 from .tasks import payment_completed
 from shop.models import Product
 from shop.recommender import Recommender
@@ -35,6 +36,29 @@ def stripe_webhook(request):
             # store Stripe payment ID
             order.stripe_id = session.payment_intent
             order.save()
+
+            # Retrieve product IDs for items in the order
+            product_ids = order.items.values_list("product_id", flat=True)
+            # print("Product IDs in order:", product_ids)  # Debugging statement
+
+            # Define your target product IDs that qualify for premium access
+            target_product_ids = {5}  # Cookbook
+            # print("Target Product IDs for premium access:", target_product_ids)
+
+            # Check if any product in the order matches a target product ID
+            if any(product_id in target_product_ids for product_id in product_ids):
+                # If criteria are met, update or create a PaidUser record
+                # print("order.user")
+                paid_user, created = PaidUser.objects.get_or_create(user=order.user)
+                paid_user.is_paid = True
+                paid_user.payment_date = timezone.now()
+                paid_user.save()
+                # print("Premium access granted.")
+            # else:
+            # print(
+            #    "No qualifying product for premium access."
+            # )  # Debugging statement
+
             # save items bought for product recommendations
             product_ids = order.items.values_list("product_id")
             products = Product.objects.filter(id__in=product_ids)
